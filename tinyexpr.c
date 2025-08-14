@@ -878,30 +878,46 @@ void te_print(const te_expr *n) { pn(n, 0); }
 char *regex_replace(const char *str, const char *pattern,
                     const char *replacement) {
   regex_t regex;
-  regmatch_t match;
+  regmatch_t match[32]; // allow up to 31 capture groups
   const char *src = str;
-  size_t repl_len = strlen(replacement);
-
-  if (regcomp(&regex, pattern, REG_EXTENDED) != 0) {
-    fprintf(stderr, "Invalid regex pattern\n");
-    return NULL;
-  }
-
   char *result = calloc(1, 1);
   size_t result_len = 0;
 
-  while (regexec(&regex, src, 1, &match, 0) == 0) {
-    size_t before_len = match.rm_so;
-    result = realloc(result, result_len + before_len + repl_len + 1);
+  if (regcomp(&regex, pattern, REG_EXTENDED)) {
+    fprintf(stderr, "Invalid regex: %s\n", pattern);
+    return NULL;
+  }
+
+  while (regexec(&regex, src, 32, match, 0) == 0) {
+    // Append text before this match
+    size_t before_len = match[0].rm_so;
+    result = realloc(result, result_len + before_len + 1);
     memcpy(result + result_len, src, before_len);
     result_len += before_len;
 
-    memcpy(result + result_len, replacement, repl_len);
-    result_len += repl_len;
+    // Process the replacement string
+    for (size_t i = 0; i < strlen(replacement); i++) {
+      if (replacement[i] == '\\' && replacement[i + 1] >= '0' &&
+          replacement[i + 1] <= '9') {
+        int g = replacement[i + 1] - '0';
+        if (match[g].rm_so != -1) {
+          size_t glen = match[g].rm_eo - match[g].rm_so;
+          result = realloc(result, result_len + glen + 1);
+          memcpy(result + result_len, src + match[g].rm_so, glen);
+          result_len += glen;
+        }
+        i++; // skip digit
+      } else {
+        result = realloc(result, result_len + 1 + 1);
+        result[result_len++] = replacement[i];
+      }
+    }
 
-    src += match.rm_eo;
+    // Move `src` forward after this match
+    src += match[0].rm_eo;
   }
 
+  // Append the remainder of the string
   size_t tail_len = strlen(src);
   result = realloc(result, result_len + tail_len + 1);
   memcpy(result + result_len, src, tail_len + 1);
@@ -927,7 +943,7 @@ char *double_to_string(double value) {
 
 double *te_evalfunc(const char *expression, double min_inclusive,
                     double max_inclusive, double step, int *error) {
-  const char *pattern = "(?<=^|\\W)t(?=\\W|$)";
+  const char *pattern = "[$]t";
 
   double *arr = malloc((floor((max_inclusive - min_inclusive) / step) + 1) *
                        sizeof(double));
@@ -937,6 +953,12 @@ double *te_evalfunc(const char *expression, double min_inclusive,
     char *tcur = double_to_string(curr);
     char *temp = regex_replace(expression, pattern, tcur);
     int er;
+    if (!temp) {
+      arr[c] = NAN;
+      continue;
+    }
+
+    puts(temp);
     arr[c] = te_interp(temp, &er);
     free(temp);
     free(tcur);
