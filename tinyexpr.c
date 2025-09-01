@@ -958,7 +958,6 @@ double *te_evalfunc(const char *expression, double min_inclusive,
       continue;
     }
 
-    puts(temp);
     arr[c] = te_interp(temp, &er);
     free(temp);
     free(tcur);
