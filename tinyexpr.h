@@ -91,7 +91,8 @@ void te_print(const te_expr *n);
 void te_free(te_expr *n);
 
 double *te_evalfunc(const char *expression, double min_inclusive,
-                    double max_inclusive, double step, int *error);
+                    double max_inclusive, double step, int *error,
+                    long *out_count);
 
 #ifdef __cplusplus
 }

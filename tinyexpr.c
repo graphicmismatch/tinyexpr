@@ -40,6 +40,7 @@ For log = natural log uncomment the next line. */
 #include <limits.h>
 #include <math.h>
 #include <regex.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -941,30 +942,64 @@ char *double_to_string(double value) {
   return str;
 }
 
+/* error codes:
+   0 = success
+  -1 = invalid args (step<=0 or min>max)
+  -2 = allocation failure
+  -3 = compile failure
+  -4 = size overflow
+*/
+
 double *te_evalfunc(const char *expression, double min_inclusive,
-                    double max_inclusive, double step, int *error) {
-  const char *pattern = "[$]t";
+                    double max_inclusive, double step, int *error,
+                    long *out_count) {
+  if (error)
+    *error = -1;
+  if (out_count)
+    *out_count = 0;
 
-  double *arr = malloc((floor((max_inclusive - min_inclusive) / step) + 1) *
-                       sizeof(double));
-  long c = 0;
-  double curr = min_inclusive;
-  while (curr <= max_inclusive) {
-    char *tcur = double_to_string(curr);
-    char *temp = regex_replace(expression, pattern, tcur);
-    int er;
-    if (!temp) {
-      arr[c] = NAN;
-      continue;
-    }
+  if (!(step > 0.0))
+    return NULL;
+  if (min_inclusive > max_inclusive)
+    return NULL;
 
-    puts(temp);
-    arr[c] = te_interp(temp, &er);
-    free(temp);
-    free(tcur);
+  double range = max_inclusive - min_inclusive;
+  double raw_steps = floor(range / step) + 1.0;
+  if (raw_steps <= 0.0)
+    return NULL;
 
-    c++;
-    curr += step;
+  if (raw_steps > (double)SIZE_MAX / sizeof(double)) {
+    if (error)
+      *error = -4;
+    return NULL;
   }
+
+  double *arr = (double *)malloc((int)raw_steps * sizeof(double));
+  if (!arr) {
+    if (error)
+      *error = -2;
+    return NULL;
+  }
+
+  double curr = min_inclusive;
+  te_variable vars[] = {{"t", &curr}};
+
+  te_expr *compiled = te_compile(expression, vars, 1, error);
+  if (!compiled) {
+    free(arr);
+    return NULL;
+  }
+
+  for (size_t i = 0; i < raw_steps; ++i) {
+    curr = min_inclusive + (double)i * step;
+    arr[i] = te_eval(compiled);
+  }
+
+  te_free(compiled);
+
+  if (out_count)
+    *out_count = (int)raw_steps;
+  if (error)
+    *error = 0;
   return arr;
 }
