@@ -942,26 +942,20 @@ char *double_to_string(double value) {
 }
 
 double *te_evalfunc(const char *expression, double min_inclusive,
-                    double max_inclusive, double step, int *error) {
+                    double max_inclusive, double step, int *error)
+{
   const char *pattern = "[$]t";
 
   double *arr = malloc((floor((max_inclusive - min_inclusive) / step) + 1) *
                        sizeof(double));
-  long c = 0;
   double curr = min_inclusive;
-  while (curr <= max_inclusive) {
-    char *tcur = double_to_string(curr);
-    char *temp = regex_replace(expression, pattern, tcur);
-    int er;
-    if (!temp) {
-      arr[c] = NAN;
-      continue;
-    }
-
-    arr[c] = te_interp(temp, &er);
-    free(temp);
-    free(tcur);
-
+  te_variable vars[] = {
+      {"$x", &curr, TE_VARIABLE, 0}};
+  long c = 0;
+  te_expr *compiled = te_compile(expression, vars, 1, error);
+  while (curr <= max_inclusive)
+  {
+    arr[c] = te_eval(compiled);
     c++;
     curr += step;
   }
