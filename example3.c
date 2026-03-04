@@ -3,8 +3,8 @@
 
 
 /* An example of calling a C function. */
-double my_sum(double a, double b) {
-    printf("Called C function with %f and %f.\n", a, b);
+te_real my_sum(te_real a, te_real b) {
+    printf("Called C function with %Lf and %Lf.\n", a, b);
     return a + b;
 }
 
@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
     te_expr *n = te_compile(expression, vars, 1, &err);
 
     if (n) {
-        const double r = te_eval(n);
-        printf("Result:\n\t%f\n", r);
+        const te_real r = te_eval(n);
+        printf("Result:\n\t%Lf\n", r);
         te_free(n);
     } else {
         /* Show the user where the error is at. */

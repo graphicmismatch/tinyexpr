@@ -30,11 +30,13 @@
 extern "C" {
 #endif
 
+typedef long double te_real;
+
 typedef struct te_expr {
   int type;
   union {
-    double value;
-    const double *bound;
+    te_real value;
+    const te_real *bound;
     const void *function;
   };
   void *parameters[1];
@@ -73,7 +75,7 @@ typedef struct te_variable {
 
 /* Parses the input expression, evaluates it, and frees it. */
 /* Returns NaN on error. */
-double te_interp(const char *expression, int *error);
+te_real te_interp(const char *expression, int *error);
 
 /* Parses the input expression and binds variables. */
 /* Returns NULL on error. */
@@ -81,7 +83,7 @@ te_expr *te_compile(const char *expression, const te_variable *variables,
                     int var_count, int *error);
 
 /* Evaluates the expression. */
-double te_eval(const te_expr *n);
+te_real te_eval(const te_expr *n);
 
 /* Prints debugging information on the syntax tree. */
 void te_print(const te_expr *n);
@@ -90,9 +92,9 @@ void te_print(const te_expr *n);
 /* This is safe to call on NULL pointers. */
 void te_free(te_expr *n);
 
-double *te_evalfunc(const char *expression, double min_inclusive,
-                    double max_inclusive, double step, int *error,
-                    long *out_count);
+te_real *te_evalfunc(const char *expression, te_real min_inclusive,
+                     te_real max_inclusive, te_real step, int *error,
+                     long long *out_count);
 
 #ifdef __cplusplus
 }

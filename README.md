@@ -36,24 +36,24 @@ Here is a minimal example to evaluate an expression at runtime.
 
 ```C
     #include "tinyexpr.h"
-    printf("%f\n", te_interp("5*5", 0)); /* Prints 25. */
+    printf("%Lf\n", te_interp("5*5", 0)); /* Prints 25. */
 ```
 
 
 ## Usage
 
-TinyExpr defines only four functions:
+TinyExpr defines only four core functions (plus te_evalfunc for sampled evaluation):
 
 ```C
-    double te_interp(const char *expression, int *error);
+    te_real te_interp(const char *expression, int *error);
     te_expr *te_compile(const char *expression, const te_variable *variables, int var_count, int *error);
-    double te_eval(const te_expr *expr);
+    te_real te_eval(const te_expr *expr);
     void te_free(te_expr *expr);
 ```
 
 ## te_interp
 ```C
-    double te_interp(const char *expression, int *error);
+    te_real te_interp(const char *expression, int *error);
 ```
 
 `te_interp()` takes an expression and immediately returns the result of it. If there
@@ -67,15 +67,15 @@ of the parse error on failure, and set `*error` to 0 on success.
 ```C
     int error;
 
-    double a = te_interp("(5+5)", 0); /* Returns 10. */
-    double b = te_interp("(5+5)", &error); /* Returns 10, error is set to 0. */
-    double c = te_interp("(5+5", &error); /* Returns NaN, error is set to 4. */
+    te_real a = te_interp("(5+5)", 0); /* Returns 10. */
+    te_real b = te_interp("(5+5)", &error); /* Returns 10, error is set to 0. */
+    te_real c = te_interp("(5+5", &error); /* Returns NaN, error is set to 4. */
 ```
 
 ## te_compile, te_eval, te_free
 ```C
     te_expr *te_compile(const char *expression, const te_variable *lookup, int lookup_len, int *error);
-    double te_eval(const te_expr *n);
+    te_real te_eval(const te_expr *n);
     void te_free(te_expr *n);
 ```
 
@@ -95,7 +95,7 @@ After you're finished, make sure to call `te_free()`.
 **example usage:**
 
 ```C
-    double x, y;
+    te_real x, y;
     /* Store variable names and pointers. */
     te_variable vars[] = {{"x", &x}, {"y", &y}};
 
@@ -105,10 +105,10 @@ After you're finished, make sure to call `te_free()`.
 
     if (expr) {
         x = 3; y = 4;
-        const double h1 = te_eval(expr); /* Returns 5. */
+        const te_real h1 = te_eval(expr); /* Returns 5. */
 
         x = 5; y = 12;
-        const double h2 = te_eval(expr); /* Returns 13. */
+        const te_real h2 = te_eval(expr); /* Returns 13. */
 
         te_free(expr);
     } else {
@@ -138,7 +138,7 @@ line. It also does error checking and binds the variables `x` and `y` to *3* and
 
         /* This shows an example where the variables
          * x and y are bound at eval-time. */
-        double x, y;
+        te_real x, y;
         te_variable vars[] = {{"x", &x}, {"y", &y}};
 
         /* This will compile the expression and check for errors. */

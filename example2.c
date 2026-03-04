@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     /* This shows an example where the variables
      * x and y are bound at eval-time. */
-    double x, y;
+    te_real x, y;
     te_variable vars[] = {{"x", &x}, {"y", &y}};
 
     /* This will compile the expression and check for errors. */
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
          * times as you like. This is fairly efficient because the parsing has
          * already been done. */
         x = 3; y = 4;
-        const double r = te_eval(n); printf("Result:\n\t%f\n", r);
+        const te_real r = te_eval(n); printf("Result:\n\t%Lf\n", r);
 
         te_free(n);
     } else {

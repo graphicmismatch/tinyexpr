@@ -33,12 +33,12 @@
 
 
 
-typedef double (*function1)(double);
+typedef te_real (*function1)(te_real);
 
 void bench(const char *expr, function1 func) {
     int i, j;
-    volatile double d;
-    double tmp;
+    volatile te_real d;
+    te_real tmp;
     clock_t start;
 
     te_variable lk = {"a", &tmp};
@@ -56,7 +56,7 @@ void bench(const char *expr, function1 func) {
     const int nelapsed = (clock() - start) * 1000 / CLOCKS_PER_SEC;
 
     /*Million floats per second input.*/
-    printf(" %.5g", d);
+    printf(" %.5Lg", d);
     if (nelapsed)
         printf("\t%5dms\t%5dmfps\n", nelapsed, loops * loops / nelapsed / 1000);
     else
@@ -78,45 +78,45 @@ void bench(const char *expr, function1 func) {
     te_free(n);
 
     /*Million floats per second input.*/
-    printf(" %.5g", d);
+    printf(" %.5Lg", d);
     if (eelapsed)
         printf("\t%5dms\t%5dmfps\n", eelapsed, loops * loops / eelapsed / 1000);
     else
         printf("\tinf\n");
 
 
-    printf("%.2f%% longer\n", (((double)eelapsed / nelapsed) - 1.0) * 100.0);
+    printf("%.2Lf%% longer\n", (((te_real)eelapsed / nelapsed) - 1.0) * 100.0);
 
 
     printf("\n");
 }
 
 
-double a5(double a) {
+te_real a5(te_real a) {
     return a+5;
 }
 
-double a55(double a) {
+te_real a55(te_real a) {
     return 5+a+5;
 }
 
-double a5abs(double a) {
+te_real a5abs(te_real a) {
     return fabs(a+5);
 }
 
-double a52(double a) {
+te_real a52(te_real a) {
     return (a+5)*2;
 }
 
-double a10(double a) {
+te_real a10(te_real a) {
     return a+(5*2);
 }
 
-double as(double a) {
+te_real as(te_real a) {
     return sqrt(pow(a, 1.5) + pow(a, 2.5));
 }
 
-double al(double a) {
+te_real al(te_real a) {
     return (1/(a+1)+2/(a+2)+3/(a+3));
 }
 

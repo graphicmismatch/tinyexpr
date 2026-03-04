@@ -45,14 +45,14 @@ For log = natural log uncomment the next line. */
 #include <stdlib.h>
 #include <string.h>
 #ifndef NAN
-#define NAN (0.0 / 0.0)
+#define NAN (0.0L / 0.0L)
 #endif
 
 #ifndef INFINITY
-#define INFINITY (1.0 / 0.0)
+#define INFINITY (1.0L / 0.0L)
 #endif
 
-typedef double (*te_fun2)(double, double);
+typedef te_real (*te_fun2)(te_real, te_real);
 
 enum {
   TOK_NULL = TE_CLOSURE7 + 1,
@@ -73,8 +73,8 @@ typedef struct state {
   const char *next;
   int type;
   union {
-    double value;
-    const double *bound;
+    te_real value;
+    const te_real *bound;
     const void *function;
   };
   void *context;
@@ -149,9 +149,9 @@ void te_free(te_expr *n) {
   free(n);
 }
 
-static double pi(void) { return 3.14159265358979323846; }
-static double e(void) { return 2.71828182845904523536; }
-static double fac(double a) { /* simplest version of fac */
+static te_real pi(void) { return 3.141592653589793238462643383279502884L; }
+static te_real e(void) { return 2.718281828459045235360287471352662497L; }
+static te_real fac(te_real a) { /* simplest version of fac */
   if (a < 0.0)
     return NAN;
   if (a > UINT_MAX)
@@ -163,9 +163,9 @@ static double fac(double a) { /* simplest version of fac */
       return INFINITY;
     result *= i;
   }
-  return (double)result;
+  return (te_real)result;
 }
-static double ncr(double n, double r) {
+static te_real ncr(te_real n, te_real r) {
   if (n < 0.0 || r < 0.0 || n < r)
     return NAN;
   if (n > UINT_MAX || r > UINT_MAX)
@@ -182,7 +182,7 @@ static double ncr(double n, double r) {
   }
   return result;
 }
-static double npr(double n, double r) { return ncr(n, r) * fac(r); }
+static te_real npr(te_real n, te_real r) { return ncr(n, r) * fac(r); }
 
 #ifdef _MSC_VER
 #pragma function(ceil)
@@ -191,34 +191,34 @@ static double npr(double n, double r) { return ncr(n, r) * fac(r); }
 
 static const te_variable functions[] = {
     /* must be in alphabetical order */
-    {"abs", fabs, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"acos", acos, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"asin", asin, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"atan", atan, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"atan2", atan2, TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"ceil", ceil, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"cos", cos, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"cosh", cosh, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"abs", fabsl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"acos", acosl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"asin", asinl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"atan", atanl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"atan2", atan2l, TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"ceil", ceill, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"cos", cosl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"cosh", coshl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"e", e, TE_FUNCTION0 | TE_FLAG_PURE, 0},
-    {"exp", exp, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"exp", expl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"fac", fac, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"floor", floor, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"ln", log, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"floor", floorl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"ln", logl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #ifdef TE_NAT_LOG
-    {"log", log, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"log", logl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #else
-    {"log", log10, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"log", log10l, TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #endif
-    {"log10", log10, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"log10", log10l, TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"ncr", ncr, TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"npr", npr, TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"pi", pi, TE_FUNCTION0 | TE_FLAG_PURE, 0},
-    {"pow", pow, TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"sin", sin, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"sinh", sinh, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"sqrt", sqrt, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"tan", tan, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"tanh", tanh, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"pow", powl, TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"sin", sinl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"sinh", sinhl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"sqrt", sqrtl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"tan", tanl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"tanh", tanhl, TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {0, 0, 0, 0}};
 
 static const te_variable *find_builtin(const char *name, int len) {
@@ -258,12 +258,12 @@ static const te_variable *find_lookup(const state *s, const char *name,
   return 0;
 }
 
-static double add(double a, double b) { return a + b; }
-static double sub(double a, double b) { return a - b; }
-static double mul(double a, double b) { return a * b; }
-static double divide(double a, double b) { return a / b; }
-static double negate(double a) { return -a; }
-static double comma(double a, double b) {
+static te_real add(te_real a, te_real b) { return a + b; }
+static te_real sub(te_real a, te_real b) { return a - b; }
+static te_real mul(te_real a, te_real b) { return a * b; }
+static te_real divide(te_real a, te_real b) { return a / b; }
+static te_real negate(te_real a) { return -a; }
+static te_real comma(te_real a, te_real b) {
   (void)a;
   return b;
 }
@@ -280,7 +280,7 @@ void next_token(state *s) {
 
     /* Try reading a number. */
     if ((s->next[0] >= '0' && s->next[0] <= '9') || s->next[0] == '.') {
-      s->value = strtod(s->next, (char **)&s->next);
+      s->value = strtold(s->next, (char **)&s->next);
       s->type = TOK_NUMBER;
     } else {
       /* Look for a variable or builtin function call. */
@@ -349,11 +349,11 @@ void next_token(state *s) {
           break;
         case '^':
           s->type = TOK_INFIX;
-          s->function = pow;
+          s->function = powl;
           break;
         case '%':
           s->type = TOK_INFIX;
-          s->function = fmod;
+          s->function = fmodl;
           break;
         case '(':
           s->type = TOK_OPEN;
@@ -549,7 +549,7 @@ static te_expr *factor(state *s) {
 
   te_expr *insertion = 0;
 
-  while (s->type == TOK_INFIX && (s->function == pow)) {
+  while (s->type == TOK_INFIX && (s->function == powl)) {
     te_fun2 t = s->function;
     next_token(s);
 
@@ -594,7 +594,7 @@ static te_expr *factor(state *s) {
   te_expr *ret = power(s);
   CHECK_NULL(ret);
 
-  while (s->type == TOK_INFIX && (s->function == pow)) {
+  while (s->type == TOK_INFIX && (s->function == powl)) {
     te_fun2 t = s->function;
     next_token(s);
     te_expr *p = power(s);
@@ -617,7 +617,7 @@ static te_expr *term(state *s) {
   CHECK_NULL(ret);
 
   while (s->type == TOK_INFIX &&
-         (s->function == mul || s->function == divide || s->function == fmod)) {
+         (s->function == mul || s->function == divide || s->function == fmodl)) {
     te_fun2 t = s->function;
     next_token(s);
     te_expr *f = factor(s);
@@ -674,10 +674,10 @@ static te_expr *list(state *s) {
   return ret;
 }
 
-#define TE_FUN(...) ((double (*)(__VA_ARGS__))n->function)
+#define TE_FUN(...) ((te_real (*)(__VA_ARGS__))n->function)
 #define M(e) te_eval(n->parameters[e])
 
-double te_eval(const te_expr *n) {
+te_real te_eval(const te_expr *n) {
   if (!n)
     return NAN;
 
@@ -699,22 +699,22 @@ double te_eval(const te_expr *n) {
     case 0:
       return TE_FUN(void)();
     case 1:
-      return TE_FUN(double)(M(0));
+      return TE_FUN(te_real)(M(0));
     case 2:
-      return TE_FUN(double, double)(M(0), M(1));
+      return TE_FUN(te_real, te_real)(M(0), M(1));
     case 3:
-      return TE_FUN(double, double, double)(M(0), M(1), M(2));
+      return TE_FUN(te_real, te_real, te_real)(M(0), M(1), M(2));
     case 4:
-      return TE_FUN(double, double, double, double)(M(0), M(1), M(2), M(3));
+      return TE_FUN(te_real, te_real, te_real, te_real)(M(0), M(1), M(2), M(3));
     case 5:
-      return TE_FUN(double, double, double, double, double)(M(0), M(1), M(2),
+      return TE_FUN(te_real, te_real, te_real, te_real, te_real)(M(0), M(1), M(2),
                                                             M(3), M(4));
     case 6:
-      return TE_FUN(double, double, double, double, double,
-                    double)(M(0), M(1), M(2), M(3), M(4), M(5));
+      return TE_FUN(te_real, te_real, te_real, te_real, te_real,
+                    te_real)(M(0), M(1), M(2), M(3), M(4), M(5));
     case 7:
-      return TE_FUN(double, double, double, double, double, double,
-                    double)(M(0), M(1), M(2), M(3), M(4), M(5), M(6));
+      return TE_FUN(te_real, te_real, te_real, te_real, te_real, te_real,
+                    te_real)(M(0), M(1), M(2), M(3), M(4), M(5), M(6));
     default:
       return NAN;
     }
@@ -731,24 +731,24 @@ double te_eval(const te_expr *n) {
     case 0:
       return TE_FUN(void *)(n->parameters[0]);
     case 1:
-      return TE_FUN(void *, double)(n->parameters[1], M(0));
+      return TE_FUN(void *, te_real)(n->parameters[1], M(0));
     case 2:
-      return TE_FUN(void *, double, double)(n->parameters[2], M(0), M(1));
+      return TE_FUN(void *, te_real, te_real)(n->parameters[2], M(0), M(1));
     case 3:
-      return TE_FUN(void *, double, double, double)(n->parameters[3], M(0),
+      return TE_FUN(void *, te_real, te_real, te_real)(n->parameters[3], M(0),
                                                     M(1), M(2));
     case 4:
-      return TE_FUN(void *, double, double, double,
-                    double)(n->parameters[4], M(0), M(1), M(2), M(3));
+      return TE_FUN(void *, te_real, te_real, te_real,
+                    te_real)(n->parameters[4], M(0), M(1), M(2), M(3));
     case 5:
-      return TE_FUN(void *, double, double, double, double,
-                    double)(n->parameters[5], M(0), M(1), M(2), M(3), M(4));
+      return TE_FUN(void *, te_real, te_real, te_real, te_real,
+                    te_real)(n->parameters[5], M(0), M(1), M(2), M(3), M(4));
     case 6:
-      return TE_FUN(void *, double, double, double, double, double, double)(
+      return TE_FUN(void *, te_real, te_real, te_real, te_real, te_real, te_real)(
           n->parameters[6], M(0), M(1), M(2), M(3), M(4), M(5));
     case 7:
-      return TE_FUN(void *, double, double, double, double, double, double,
-                    double)(n->parameters[7], M(0), M(1), M(2), M(3), M(4),
+      return TE_FUN(void *, te_real, te_real, te_real, te_real, te_real, te_real,
+                    te_real)(n->parameters[7], M(0), M(1), M(2), M(3), M(4),
                             M(5), M(6));
     default:
       return NAN;
@@ -781,7 +781,7 @@ static void optimize(te_expr *n) {
       }
     }
     if (known) {
-      const double value = te_eval(n);
+      const te_real value = te_eval(n);
       te_free_parameters(n);
       n->type = TE_CONSTANT;
       n->value = value;
@@ -820,10 +820,10 @@ te_expr *te_compile(const char *expression, const te_variable *variables,
   }
 }
 
-double te_interp(const char *expression, int *error) {
+te_real te_interp(const char *expression, int *error) {
   te_expr *n = te_compile(expression, 0, 0, error);
 
-  double ret;
+  te_real ret;
   if (n) {
     ret = te_eval(n);
     te_free(n);
@@ -839,7 +839,7 @@ static void pn(const te_expr *n, int depth) {
 
   switch (TYPE_MASK(n->type)) {
   case TE_CONSTANT:
-    printf("%f\n", n->value);
+    printf("%Lf\n", n->value);
     break;
   case TE_VARIABLE:
     printf("bound %p\n", n->bound);
@@ -928,8 +928,8 @@ char *regex_replace(const char *str, const char *pattern,
   return result;
 }
 
-char *double_to_string(double value) {
-  int len = snprintf(NULL, 0, "%g", value);
+char *double_to_string(te_real value) {
+  int len = snprintf(NULL, 0, "%Lg", value);
   if (len < 0)
     return NULL;
 
@@ -937,7 +937,7 @@ char *double_to_string(double value) {
   if (!str)
     return NULL;
 
-  snprintf(str, len + 1, "%g", value);
+  snprintf(str, len + 1, "%Lg", value);
 
   return str;
 }
@@ -950,38 +950,45 @@ char *double_to_string(double value) {
   -4 = size overflow
 */
 
-double *te_evalfunc(const char *expression, double min_inclusive,
-                    double max_inclusive, double step, int *error,
-                    long *out_count) {
+te_real *te_evalfunc(const char *expression, te_real min_inclusive,
+                     te_real max_inclusive, te_real step, int *error,
+                     long long *out_count) {
   if (error)
     *error = -1;
   if (out_count)
     *out_count = 0;
 
-  if (!(step > 0.0))
+  if (!(step > 0.0L))
     return NULL;
   if (min_inclusive > max_inclusive)
     return NULL;
 
-  double range = max_inclusive - min_inclusive;
-  double raw_steps = floor(range / step) + 1.0;
-  if (raw_steps <= 0.0)
+  te_real range = max_inclusive - min_inclusive;
+  te_real raw_steps = floorl(range / step) + 1.0L;
+  if (raw_steps <= 0.0L)
     return NULL;
 
-  if (raw_steps > (double)SIZE_MAX / sizeof(double)) {
+  if (raw_steps > (te_real)SIZE_MAX) {
     if (error)
       *error = -4;
     return NULL;
   }
 
-  double *arr = (double *)malloc((int)raw_steps * sizeof(double));
+  const size_t step_count = (size_t)raw_steps;
+  if (step_count > SIZE_MAX / sizeof(te_real)) {
+    if (error)
+      *error = -4;
+    return NULL;
+  }
+
+  te_real *arr = (te_real *)malloc(step_count * sizeof(te_real));
   if (!arr) {
     if (error)
       *error = -2;
     return NULL;
   }
 
-  double curr = min_inclusive;
+  te_real curr = min_inclusive;
   te_variable vars[] = {{"t", &curr}};
 
   te_expr *compiled = te_compile(expression, vars, 1, error);
@@ -990,15 +997,15 @@ double *te_evalfunc(const char *expression, double min_inclusive,
     return NULL;
   }
 
-  for (size_t i = 0; i < raw_steps; ++i) {
-    curr = min_inclusive + (double)i * step;
+  for (size_t i = 0; i < step_count; ++i) {
+    curr = min_inclusive + (te_real)i * step;
     arr[i] = te_eval(compiled);
   }
 
   te_free(compiled);
 
   if (out_count)
-    *out_count = (int)raw_steps;
+    *out_count = (long long)step_count;
   if (error)
     *error = 0;
   return arr;
